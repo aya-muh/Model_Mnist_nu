@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optical Digit Verification System | نظام التحقق البصري وتصنيف الأرقام</title>
+    <style>
+        /* ==========================================================================
+           Refined Corporate Document Palette & Styling Rules:
+           - Warm off-white / cream background
+           - Deep corporate navy blue
+           - Slate gray accents & subtle status indicators
+           - Strictly ZERO futuristic/neon AI styling
+           - Strictly ZERO icons or emojis
+           ========================================================================== */
+
+        :root {
+            --bg-page: #f8f7f4;
+            --bg-page-subtle: #f2efe9;
+            --bg-surface: #ffffff;
+            --bg-subtle: #faf9f6;
+            --bg-hover: #eeebe3;
+            
+            --border-light: #e6e3dc;
+            --border-mid: #d3cfc7;
+            --border-dark: #64748b;
+            --border-active: #1e293b;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --text-inverted: #ffffff;
+            
+            --navy-deep: #0f172a;
+            --navy-corporate: #1e293b;
+            --navy-hover: #2d3748;
+            
+            --status-verified: #166534;
+            --status-verified-bg: #f0fdf4;
+            --status-verified-border: #bbf7d0;
+            
+            --status-alert: #991b1b;
+            --status-alert-bg: #fef2f2;
+            --status-alert-border: #fecaca;
+            
+            --highlight-row: #f1f5f9;
+            --meter-track: #e2e8f0;
+            --meter-fill: #475569;
+            --meter-winner: #0f172a;
+
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 13.5px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header & Telemetry */
+        .system-header {
+            background-color: var(--navy-deep);
+            color: var(--text-inverted);
+            border-bottom: 2px solid var(--navy-corporate);
+            padding: 18px 0;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand-block .system-code {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            color: #94a3b8;
+            margin-bottom: 3px;
+        }
+
+        .system-title {
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            margin-bottom: 3px;
+        }
+
+        .system-title-ar {
+            font-size: 13px;
+            color: #cbd5e1;
+            font-weight: 400;
+        }
+
+        .system-telemetry {
+            display: flex;
+            gap: 14px;
+        }
+
+        .telemetry-item {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 7px 12px;
+            min-width: 130px;
+        }
+
+        .telemetry-label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+
+        .telemetry-value {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .status-online {
+            color: #4ade80;
+        }
+
+        /* Guidelines Bar (Bilingual) */
+        .guidelines-bar {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-mid);
+            padding: 11px 0;
+        }
+
+        .guidelines-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .guideline-en strong,
+        .guideline-ar strong {
+            color: var(--text-primary);
+        }
+
+        /* Main Workspace Layout */
+        .main-layout {
+            flex: 1;
+            padding-top: 24px;
+            padding-bottom: 32px;
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-mid);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .panel-header {
+            background-color: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-mid);
+            padding: 11px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-id {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            background-color: #eae7df;
+            padding: 2px 6px;
+            border: 1px solid var(--border-mid);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.01em;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        /* Switchable Tabs Control */
+        .tab-control {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            border: 1px solid var(--border-mid);
+            background-color: var(--bg-subtle);
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            border-right: 1px solid var(--border-mid);
+            padding: 9px 8px;
+            font-family: var(--font-sans);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .tab-btn:last-child {
+            border-right: none;
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-surface);
+            color: var(--navy-deep);
+            border-bottom: 2px solid var(--navy-deep);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Canvas Tab & Drawing Pad */
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .canvas-frame {
+            border: 2px solid var(--navy-corporate);
+            background-color: #ffffff;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
+            position: relative;
+            cursor: crosshair;
+            width: 280px;
+            height: 280px;
+        }
+
+        #drawCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+        }
+
+        .canvas-guidelines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            border: 1px dashed rgba(100, 116, 139, 0.25);
+            box-sizing: border-box;
+        }
+
+        .canvas-guidelines::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(100, 116, 139, 0.12);
+        }
+
+        .canvas-guidelines::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            height: 100%;
+            width: 1px;
+            background: rgba(100, 116, 139, 0.12);
+        }
+
+        .canvas-toolbar {
+            width: 280px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .canvas-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .btn-canvas-clear {
+            background-color: var(--bg-subtle);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-mid);
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-canvas-clear:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* File Dropzone */
+        .drop-zone {
+            border: 2px dashed var(--border-dark);
+            background-color: var(--bg-subtle);
+            padding: 34px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--navy-deep);
+            background-color: var(--bg-hover);
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .drop-prompt {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .drop-primary {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--navy-corporate);
+        }
+
+        .drop-primary-ar {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .drop-secondary,
+        .drop-secondary-ar {
+            font-size: 10.5px;
+            color: var(--text-muted);
+        }
+
+        .selected-file-display {
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-mid);
+            padding: 9px 12px;
+            font-size: 11.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .file-tag {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--text-muted);
+            font-size: 10.5px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 240px;
+        }
+
+        .file-size {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+        }
+
+        .btn-text-remove {
+            background: none;
+            border: none;
+            color: var(--status-alert);
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            cursor: pointer;
+            margin-left: auto;
+            padding: 2px 4px;
+        }
+
+        .btn-text-remove:hover {
+            text-decoration: underline;
+        }
+
+        /* URL Input */
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-mid);
+            background-color: var(--bg-surface);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .text-input:focus {
+            border-color: var(--navy-deep);
+            box-shadow: 0 0 0 1px var(--navy-deep);
+        }
+
+        .input-caption {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* Action Buttons */
+        .intake-actions {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .btn-primary {
+            background-color: var(--navy-corporate);
+            color: var(--text-inverted);
+            border: 1px solid var(--navy-deep);
+            padding: 12px 14px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--navy-deep);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-surface);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-mid);
+            padding: 12px 14px;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Alert Notification Box */
+        .alert-box {
+            background-color: var(--status-alert-bg);
+            border: 1px solid var(--status-alert-border);
+            color: var(--status-alert);
+            padding: 11px 14px;
+            margin-bottom: 18px;
+            font-size: 11.5px;
+        }
+
+        .alert-title {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+        }
+
+        .alert-msg-en {
+            margin-bottom: 3px;
+        }
+
+        /* Technical Specifications Box */
+        .system-specs-box {
+            border-top: 1px solid var(--border-light);
+            padding-top: 14px;
+        }
+
+        .specs-title {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .specs-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            border-bottom: 1px dotted var(--border-light);
+            padding-bottom: 3px;
+        }
+
+        .spec-key {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .spec-val {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* Right Panel: States & Verification Reports */
+        .idle-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .idle-box {
+            border: 1px dashed var(--border-mid);
+            background-color: var(--bg-subtle);
+            padding: 30px 18px;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .idle-code {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .idle-text-en {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .idle-text-ar {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        /* Loading Ticker */
+        .loading-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .loading-bar-wrapper {
+            width: 220px;
+            height: 5px;
+            background-color: var(--border-light);
+            margin: 0 auto 14px auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar {
+            width: 60px;
+            height: 100%;
+            background-color: var(--navy-deep);
+            position: absolute;
+            animation: indeterminate 1.2s infinite ease-in-out;
+        }
+
+        @keyframes indeterminate {
+            0% { left: -60px; }
+            100% { left: 220px; }
+        }
+
+        .loading-text {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--navy-deep);
+            margin-bottom: 4px;
+        }
+
+        .loading-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Verified Results Layout */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .summary-card {
+            border: 1px solid var(--border-mid);
+            background-color: var(--bg-subtle);
+            display: grid;
+            grid-template-columns: 190px 1fr;
+            overflow: hidden;
+        }
+
+        .summary-primary {
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-mid);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .digit-output {
+            font-family: var(--font-mono);
+            font-size: 68px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--navy-deep);
+            margin-bottom: 10px;
+        }
+
+        .badge-verified {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 3px 8px;
+            background-color: var(--status-verified-bg);
+            color: var(--status-verified);
+            border: 1px solid var(--status-verified-border);
+        }
+
+        .summary-secondary {
+            padding: 16px 18px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            align-content: center;
+        }
+
+        .stat-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-value.mono {
+            font-family: var(--font-mono);
+        }
+
+        .stat-value.mono-truncate {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* Matrix Card */
+        .matrix-card,
+        .distribution-card {
+            border: 1px solid var(--border-mid);
+            background-color: #ffffff;
+        }
+
+        .sub-header {
+            background-color: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-mid);
+            padding: 9px 14px;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+        }
+
+        .matrix-preview-row {
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .matrix-canvas-frame {
+            border: 2px solid var(--navy-corporate);
+            background-color: #000000;
+            width: 112px;
+            height: 112px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .matrix-image {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: block;
+        }
+
+        .matrix-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .matrix-detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            border-bottom: 1px dotted var(--border-light);
+            padding-bottom: 3px;
+        }
+
+        .detail-name {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+        }
+
+        .detail-data {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* Distribution Table */
+        .dist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+
+        .dist-table th {
+            background-color: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-mid);
+            padding: 7px 12px;
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .dist-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        .dist-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dist-table tr.winner-row {
+            background-color: var(--highlight-row);
+            font-weight: 700;
+            color: var(--navy-deep);
+        }
+
+        .col-digit { width: 55px; }
+        .col-conf { width: 105px; }
+        .col-meter { width: 220px; }
+        .col-raw { width: 100px; }
+
+        .meter-track {
+            width: 100%;
+            height: 9px;
+            background-color: var(--meter-track);
+            border: 1px solid var(--border-mid);
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background-color: var(--meter-fill);
+            transition: width 0.25s ease;
+        }
+
+        .dist-table tr.winner-row .meter-fill {
+            background-color: var(--meter-winner);
+        }
+
+        /* Footer */
+        .system-footer {
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-mid);
+            padding: 14px 0;
+            margin-top: auto;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 960px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .guidelines-content {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+            .summary-primary {
+                border-right: none;
+                border-bottom: 1px solid var(--border-mid);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="system-header">
+        <div class="header-inner container">
+            <div class="brand-block">
+                <div class="system-code">[ODVS-XGB-784 | REVISION 2.0]</div>
+                <h1 class="system-title">Optical Digit Verification System</h1>
+                <div class="system-title-ar">نظام التحقق البصري وتصنيف الأرقام المكتوبة بخط اليد</div>
+            </div>
+            <div class="system-telemetry">
+                <div class="telemetry-item">
+                    <span class="telemetry-label">SYSTEM STATUS</span>
+                    <span class="telemetry-value status-online" id="statusIndicator">ONLINE</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="telemetry-label">CORE ENGINE</span>
+                    <span class="telemetry-value">XGBoost Multi-Class</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="telemetry-label">NORMALIZATION</span>
+                    <span class="telemetry-value">NIST 20x20 / 28x28</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="guidelines-bar">
+        <div class="container guidelines-content">
+            <div class="guideline-en">
+                <strong>Standard Image Requirements:</strong> Single handwritten digit (0 through 9). Automatic bounding-box cropping, polarity inversion, and center-of-mass alignment will be applied to guarantee MNIST compliance.
+            </div>
+            <div class="guideline-ar" dir="rtl">
+                <strong>متطلبات الصورة القياسية:</strong> رقم فردي مكتوب بخط اليد (من 0 إلى 9). يقوم النظام تلقائياً باستخراج المربع المحيط وعكس القطبية والمحاذاة المئوية لضمان مطابقة مواصفات MNIST الأصلية.
+            </div>
+        </div>
+    </div>
+
+    <main class="container main-layout">
+        
+        <!-- Left Panel: Intake Console -->
+        <section class="panel intake-panel">
+            <div class="panel-header">
+                <span class="panel-id">SECTION 01</span>
+                <h2 class="panel-title">Document Intake Console / منصة إدخال المستند</h2>
+            </div>
+            <div class="panel-body">
+                
+                <!-- Switchable Tabs -->
+                <div class="tab-control">
+                    <button type="button" class="tab-btn active" id="tabCanvasBtn" onclick="switchTab('canvas')">
+                        DRAWING CANVAS / رسم
+                    </button>
+                    <button type="button" class="tab-btn" id="tabUploadBtn" onclick="switchTab('upload')">
+                        FILE UPLOAD / رفع ملف
+                    </button>
+                    <button type="button" class="tab-btn" id="tabUrlBtn" onclick="switchTab('url')">
+                        IMAGE URL / رابط
+                    </button>
+                </div>
+
+                <!-- Tab 1: Interactive Drawing Canvas -->
+                <div class="tab-pane active" id="paneCanvas">
+                    <div class="canvas-container">
+                        <div class="canvas-frame">
+                            <canvas id="drawCanvas" width="280" height="280"></canvas>
+                            <div class="canvas-guidelines"></div>
+                        </div>
+                        <div class="canvas-toolbar">
+                            <span class="canvas-hint">Draw single digit (0-9) inside pad</span>
+                            <button type="button" class="btn-canvas-clear" onclick="clearCanvas()">
+                                [CLEAR CANVAS / مسح]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Local File Upload -->
+                <div class="tab-pane" id="paneUpload" style="display: none;">
+                    <div class="drop-zone" id="dropZone">
+                        <input type="file" id="fileInput" accept=".png, .jpg, .jpeg, .webp" class="file-input-hidden">
+                        <div class="drop-prompt">
+                            <span class="drop-primary">DRAG AND DROP DOCUMENT IMAGE HERE</span>
+                            <span class="drop-primary-ar">اسحب وأفلت صورة المستند هنا</span>
+                            <span class="drop-secondary">or click to browse local storage (.png, .jpg, .jpeg, .webp)</span>
+                            <span class="drop-secondary-ar">أو اضغط لاختيار ملف من جهازك (بحد أقصى 10 ميغابايت)</span>
+                        </div>
+                    </div>
+                    <div class="selected-file-display" id="selectedFileDisplay" style="display: none;">
+                        <span class="file-tag">SELECTED:</span>
+                        <span class="file-name" id="selectedFileName">--</span>
+                        <span class="file-size" id="selectedFileSize">--</span>
+                        <button type="button" class="btn-text-remove" onclick="clearSelectedFile()">[REMOVE]</button>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Image URL -->
+                <div class="tab-pane" id="paneUrl" style="display: none;">
+                    <div class="input-group">
+                        <label for="urlInput" class="input-label">
+                            <span>IMAGE HTTP/HTTPS URL</span>
+                            <span dir="rtl">رابط الصورة المباشر عبر الإنترنت</span>
+                        </label>
+                        <input type="url" id="urlInput" class="text-input" placeholder="https://example.com/digit_sample.png">
+                        <div class="input-caption">
+                            <span>Image will be fetched directly by the verification server over a secure HTTP connection.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Execution Controls -->
+                <div class="intake-actions">
+                    <button type="button" class="btn-primary" id="submitBtn" onclick="submitVerification()">
+                        EXECUTE VERIFICATION / بدء الفحص
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="resetAll()">
+                        RESET CONSOLE / إعادة ضبط
+                    </button>
+                </div>
+
+                <!-- Error Box -->
+                <div id="alertBox" class="alert-box" style="display: none;">
+                    <div class="alert-title" id="alertTitle">ERROR</div>
+                    <div class="alert-msg-en" id="alertMsgEn"></div>
+                    <div class="alert-msg-ar" id="alertMsgAr" dir="rtl"></div>
+                </div>
+
+                <!-- Preprocessing Pipeline Specs -->
+                <div class="system-specs-box">
+                    <div class="specs-title">VERIFICATION SPECIFICATIONS</div>
+                    <div class="specs-grid">
+                        <div class="spec-row">
+                            <span class="spec-key">Bounding Box:</span>
+                            <span class="spec-val">Adaptive Threshold Crop [20x20]</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-key">Padding & Centering:</span>
+                            <span class="spec-val">Center-of-Mass Alignment (28x28)</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-key">Polarity Logic:</span>
+                            <span class="spec-val">Intensity > 128 => Auto Invert</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-key">Feature Vector:</span>
+                            <span class="spec-val">784 Normalized Features [0.0 - 1.0]</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Right Panel: Output & Analysis Report -->
+        <section class="panel report-panel">
+            <div class="panel-header">
+                <span class="panel-id">SECTION 02</span>
+                <h2 class="panel-title">Verification Analysis Report / تقرير التحقق والنتائج</h2>
+            </div>
+            <div class="panel-body">
+                
+                <!-- Idle Placeholder -->
+                <div class="idle-state" id="idleState">
+                    <div class="idle-box">
+                        <div class="idle-code">[SYSTEM STANDBY]</div>
+                        <div class="idle-text-en">Draw a digit or provide an image to execute optical classification.</div>
+                        <div class="idle-text-ar" dir="rtl">ارسم رقماً أو قدّم صورة لتنفيذ التحقق والتصنيف البصري.</div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState" style="display: none;">
+                    <div class="loading-bar-wrapper">
+                        <div class="loading-bar"></div>
+                    </div>
+                    <div class="loading-text">PROCESSING MATRIX & INFERENCE...</div>
+                    <div class="loading-sub">جاري استخراج المربع وتوسيط الرقم وتنفيذ خوارزمية التنبؤ</div>
+                </div>
+
+                <!-- Verified Results Container -->
+                <div class="results-container" id="resultsContainer" style="display: none;">
+                    
+                    <!-- Primary Summary Card -->
+                    <div class="summary-card">
+                        <div class="summary-primary">
+                            <div class="meta-label">CLASSIFIED DIGIT / الرقم المصنف</div>
+                            <div class="digit-output" id="resDigit">--</div>
+                            <div class="badge-verified" id="resBadge">VERIFIED [MATCH CONFIRMED]</div>
+                        </div>
+                        <div class="summary-secondary">
+                            <div class="stat-block">
+                                <span class="stat-label">CONFIDENCE SCORE / نسبة التأكيد</span>
+                                <span class="stat-value" id="resConfidence">--%</span>
+                            </div>
+                            <div class="stat-block">
+                                <span class="stat-label">INFERENCE TIME / وقت الفحص</span>
+                                <span class="stat-value mono" id="resLatency">-- ms</span>
+                            </div>
+                            <div class="stat-block">
+                                <span class="stat-label">BACKGROUND POLARITY / قطبية الخلفية</span>
+                                <span class="stat-value" id="resPolarity">--</span>
+                            </div>
+                            <div class="stat-block">
+                                <span class="stat-label">INPUT SOURCE / مصدر المدخلات</span>
+                                <span class="stat-value mono-truncate" id="resSource">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optical Matrix Inspection Panel -->
+                    <div class="matrix-card">
+                        <div class="sub-header">
+                            <span>NORMALIZED 28x28 SENSOR MATRIX PREVIEW</span>
+                            <span dir="rtl">المصفوفة البصرية المعالجة (28x28) الموجهة للنموذج</span>
+                        </div>
+                        <div class="matrix-preview-row">
+                            <div class="matrix-canvas-frame">
+                                <img id="resPreviewImg" src="" alt="Preprocessed 28x28 Bitmap" class="matrix-image">
+                            </div>
+                            <div class="matrix-details">
+                                <div class="matrix-detail-item">
+                                    <span class="detail-name">Bounding Normalization:</span>
+                                    <span class="detail-data">20x20 Bounded Box (Aspect Preserved)</span>
+                                </div>
+                                <div class="matrix-detail-item">
+                                    <span class="detail-name">Sensor Grid:</span>
+                                    <span class="detail-data">28 x 28 Pixels (784 Vector)</span>
+                                </div>
+                                <div class="matrix-detail-item">
+                                    <span class="detail-name">Raw Mean Intensity:</span>
+                                    <span class="detail-data" id="resPixelMean">-- / 255</span>
+                                </div>
+                                <div class="matrix-detail-item">
+                                    <span class="detail-name">Alignment Mechanism:</span>
+                                    <span class="detail-data">Center-of-Mass Translated</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Distribution Breakdown -->
+                    <div class="distribution-card">
+                        <div class="sub-header">
+                            <span>PROBABILITY DISTRIBUTION (DIGITS 0 - 9)</span>
+                            <span dir="rtl">توزيع الاحتمالات لكافة الأرقام</span>
+                        </div>
+                        <div class="distribution-table-wrapper">
+                            <table class="dist-table" id="distTable">
+                                <thead>
+                                    <tr>
+                                        <th class="col-digit">DIGIT</th>
+                                        <th class="col-conf">CONFIDENCE %</th>
+                                        <th class="col-meter">PROBABILITY DENSITY</th>
+                                        <th class="col-raw">RAW (P)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="distTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="system-footer">
+        <div class="container footer-content">
+            <div class="footer-left">
+                ODVS v2.0 | Handwritten Digit Recognition Service | XGBoost Engine (MNIST)
+            </div>
+            <div class="footer-right">
+                Standard NIST Document Verification & Optical Centering Architecture
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * Optical Digit Verification System (ODVS) Client Engine
+         * Implements Canvas drawing with touch/mouse support,
+         * tab navigation, and seamless AJAX communication.
+         */
+
+        let currentTab = 'canvas';
+        let selectedFile = null;
+        let isDrawing = false;
+        let hasDrawn = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            initDropZone();
+            checkSystemHealth();
+        });
+
+        // Initialize Canvas with High-DPI support and white background
+        function initCanvas() {
+            // Setup drawing styles matching heavy stroke pen on paper
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 18;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                hasDrawn = true;
+                const pos = getCanvasPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+                drawDot(lastX, lastY);
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+                const pos = getCanvasPos(e);
+                drawLine(lastX, lastY, pos.x, pos.y);
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            window.addEventListener('mouseup', () => { isDrawing = false; });
+            canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+            // Touch Events (Mobile/Tablet Support)
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (e.touches.length > 0) {
+                    isDrawing = true;
+                    hasDrawn = true;
+                    const pos = getCanvasPos(e.touches[0]);
+                    lastX = pos.x;
+                    lastY = pos.y;
+                    drawDot(lastX, lastY);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDrawing || e.touches.length === 0) return;
+                const pos = getCanvasPos(e.touches[0]);
+                drawLine(lastX, lastY, pos.x, pos.y);
+                lastX = pos.x;
+                lastY = pos.y;
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isDrawing = false;
+            }, { passive: false });
+        }
+
+        function getCanvasPos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        function drawDot(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, ctx.lineWidth / 2, 0, Math.PI * 2);
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.fill();
+        }
+
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            hasDrawn = false;
+            hideAlert();
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            currentTab = tab;
+            hideAlert();
+
+            const tabs = ['canvas', 'upload', 'url'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+                const pane = document.getElementById('pane' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (t === tab) {
+                    btn.classList.add('active');
+                    pane.style.display = 'block';
+                } else {
+                    btn.classList.remove('active');
+                    pane.style.display = 'none';
+                }
+            });
+        }
+
+        // File Dropzone Handling
+        function initDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    handleFileSelection(e.target.files[0]);
+                }
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('drag-over');
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    handleFileSelection(dt.files[0]);
+                }
+            });
+        }
+
+        function handleFileSelection(file) {
+            hideAlert();
+            const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const allowedExts = ['png', 'jpg', 'jpeg', 'webp'];
+
+            if (!allowed.includes(file.type) && !allowedExts.includes(ext)) {
+                showAlert(
+                    'Invalid File Type',
+                    'Selected file format is unsupported. Please select a PNG, JPG, JPEG, or WEBP image.',
+                    'صيغة الملف غير مدعومة. يدعم النظام ملفات الصور من النوع PNG, JPG, JPEG, WEBP فقط.'
+                );
+                clearSelectedFile();
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert(
+                    'File Exceeds Size Limit',
+                    'File size exceeds the 10 MB maximum limit.',
+                    'حجم الملف يتجاوز الحد الأقصى المسموح به (10 ميغابايت).'
+                );
+                clearSelectedFile();
+                return;
+            }
+
+            selectedFile = file;
+            document.getElementById('selectedFileName').textContent = file.name;
+            document.getElementById('selectedFileSize').textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+            document.getElementById('selectedFileDisplay').style.display = 'flex';
+        }
+
+        function clearSelectedFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFileDisplay').style.display = 'none';
+        }
+
+        // Service Health Check
+        async function checkSystemHealth() {
+            const statusElem = document.getElementById('statusIndicator');
+            try {
+                const response = await fetch('/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.model_loaded) {
+                        statusElem.textContent = 'ONLINE [MODEL READY]';
+                        statusElem.className = 'telemetry-value status-online';
+                    } else {
+                        statusElem.textContent = 'STANDBY [MODEL UNLOADED]';
+                        statusElem.style.color = '#f59e0b';
+                    }
+                } else {
+                    statusElem.textContent = 'ERROR [HTTP ' + response.status + ']';
+                    statusElem.style.color = '#ef4444';
+                }
+            } catch (err) {
+                statusElem.textContent = 'DISCONNECTED';
+                statusElem.style.color = '#ef4444';
+            }
+        }
+
+        // Verification Execution via AJAX
+        async function submitVerification() {
+            hideAlert();
+
+            const idleState = document.getElementById('idleState');
+            const loadingState = document.getElementById('loadingState');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const submitBtn = document.getElementById('submitBtn');
+
+            let requestBody = null;
+            let requestHeaders = {};
+
+            if (currentTab === 'canvas') {
+                if (!hasDrawn) {
+                    showAlert(
+                        'Empty Canvas',
+                        'Please draw a single digit (0 through 9) on the canvas before executing verification.',
+                        'يرجى رسم رقم (من 0 إلى 9) على اللوحة قبل بدء الفحص.'
+                    );
+                    return;
+                }
+                const dataUrl = canvas.toDataURL('image/png');
+                requestBody = JSON.stringify({ canvas_data: dataUrl });
+                requestHeaders['Content-Type'] = 'application/json';
+
+            } else if (currentTab === 'upload') {
+                if (!selectedFile) {
+                    showAlert(
+                        'Missing Input File',
+                        'Please select or drag-and-drop an image file before executing verification.',
+                        'يرجى اختيار أو إسقاط ملف صورة قبل تنفيذ الفحص.'
+                    );
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                requestBody = formData;
+
+            } else {
+                const urlInput = document.getElementById('urlInput');
+                const urlValue = urlInput.value.trim();
+
+                if (!urlValue) {
+                    showAlert(
+                        'Missing Image URL',
+                        'Please provide a valid HTTP or HTTPS image URL.',
+                        'يرجى إدخال رابط صورة صالح يبدأ بـ http:// أو https://'
+                    );
+                    return;
+                }
+
+                if (!urlValue.startsWith('http://') && !urlValue.startsWith('https://')) {
+                    showAlert(
+                        'Invalid URL Protocol',
+                        'Image URL must begin with http:// or https://',
+                        'يجب أن يبدأ رابط الصورة ببروتوكول صالح (http:// أو https://)'
+                    );
+                    return;
+                }
+
+                requestBody = JSON.stringify({ image_url: urlValue });
+                requestHeaders['Content-Type'] = 'application/json';
+            }
+
+            // Set UI to loading state
+            idleState.style.display = 'none';
+            resultsContainer.style.display = 'none';
+            loadingState.style.display = 'block';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: requestHeaders,
+                    body: requestBody
+                });
+
+                const data = await response.json();
+
+                loadingState.style.display = 'none';
+                submitBtn.disabled = false;
+
+                if (!response.ok || !data.success) {
+                    idleState.style.display = 'block';
+                    showAlert(
+                        'Verification Processing Failure',
+                        data.error || 'Server error encountered during image processing or inference.',
+                        data.error_ar || 'حدث خطأ في الخادم أثناء معالجة الصورة أو التنبؤ.'
+                    );
+                    return;
+                }
+
+                renderResults(data);
+
+            } catch (err) {
+                loadingState.style.display = 'none';
+                idleState.style.display = 'block';
+                submitBtn.disabled = false;
+                showAlert(
+                    'Connection Network Failure',
+                    `Could not communicate with verification service: ${err.message}`,
+                    'تعذر الاتصال بخدمة التحقق. يرجى التأكد من تشغيل الخادم والاتصال بالشبكة.'
+                );
+            }
+        }
+
+        // Render Verification Results
+        function renderResults(data) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            document.getElementById('idleState').style.display = 'none';
+
+            // Summary Card
+            document.getElementById('resDigit').textContent = data.predicted_digit;
+            document.getElementById('resConfidence').textContent = `${data.confidence.toFixed(2)}%`;
+            document.getElementById('resLatency').textContent = `${data.inference_time_ms} ms`;
+            document.getElementById('resPolarity').textContent = data.background_shade;
+            document.getElementById('resSource').textContent = data.input_source;
+
+            // Optical Sensor Matrix Preview
+            document.getElementById('resPreviewImg').src = data.preview_image;
+            document.getElementById('resPixelMean').textContent = `${data.pixel_mean} / 255`;
+
+            // Distribution Table
+            const tbody = document.getElementById('distTableBody');
+            tbody.innerHTML = '';
+
+            data.distribution.forEach(item => {
+                const tr = document.createElement('tr');
+                if (item.digit === data.predicted_digit) {
+                    tr.className = 'winner-row';
+                }
+
+                const digitPrefix = item.digit === data.predicted_digit ? `[${item.digit}] *` : ` ${item.digit}  `;
+
+                tr.innerHTML = `
+                    <td class="col-digit">${digitPrefix}</td>
+                    <td class="col-conf">${item.percentage.toFixed(2)}%</td>
+                    <td class="col-meter">
+                        <div class="meter-track">
+                            <div class="meter-fill" style="width: ${item.percentage}%;"></div>
+                        </div>
+                    </td>
+                    <td class="col-raw">${item.probability.toFixed(6)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            resultsContainer.style.display = 'flex';
+        }
+
+        function showAlert(title, msgEn, msgAr) {
+            const alertBox = document.getElementById('alertBox');
+            document.getElementById('alertTitle').textContent = `[${title.toUpperCase()}]`;
+            document.getElementById('alertMsgEn').textContent = msgEn;
+            document.getElementById('alertMsgAr').textContent = msgAr;
+            alertBox.style.display = 'block';
+        }
+
+        function hideAlert() {
+            document.getElementById('alertBox').style.display = 'none';
+        }
+
+        function resetAll() {
+            clearCanvas();
+            clearSelectedFile();
+            document.getElementById('urlInput').value = '';
+            hideAlert();
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('idleState').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

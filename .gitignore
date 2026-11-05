@@ -1,0 +1,88 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# MLflow tracking local directories & runs
+mlruns/
+mlartifacts/
+.mlflow/
+
+# Large Docker exported image archives (GitHub file size limit: 100 MB)
+*.ter
+*.tar
+*.tar.gz
+*.iso
+cybersecurity_service/cybersecurity-docker-sher.ter
+
+# Environments & Secrets
+.env
+.env.local
+*.env
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+*.ter
+*.pkl
+*.zip
+*.csv
+Mnist/
+*.ter
+*.pkl
+venv*/
+__pycache__/
